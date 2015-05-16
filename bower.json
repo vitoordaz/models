@@ -1,0 +1,21 @@
+{
+  "name": "models",
+  "main": [
+    "dist/models.js"
+  ],
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git@bitbucket.org:vitoordaz/models.git"
+  },
+  "dependencies": {
+    "jquery": "2.1.4",
+    "backbone": "1.2.0",
+    "underscore": "1.8.3"
+  },
+  "devDependencies": {
+    "requirejs": "latest",
+    "mocha": "latest",
+    "should": "latest"
+  }
+}
