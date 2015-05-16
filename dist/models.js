@@ -1,7 +1,7 @@
 /* jshint strict: true */
 /* globals define */
 
-define('utils',['underscore', 'exports'], function(_, exports) {
+AM.define('utils',['underscore', 'exports'], function(_, exports) {
   'use strict';
 
   var VARIABLE_BLOCK_REGEX = /{{\s*\S+\s*}}/g;
@@ -69,7 +69,7 @@ define('utils',['underscore', 'exports'], function(_, exports) {
 /* jshint strict: true */
 /* globals define */
 
-define('interaction',[
+AM.define('interaction',[
   'underscore',
   'Backbone',
   'utils'
@@ -167,7 +167,7 @@ define('interaction',[
 /* jshint strict: true */
 /* globals define */
 
-define('script',['underscore', 'Backbone'], function(_, Backbone) {
+AM.define('script',['underscore', 'Backbone'], function(_, Backbone) {
   'use strict';
 
   return Backbone.Model.extend({
@@ -205,7 +205,7 @@ define('script',['underscore', 'Backbone'], function(_, Backbone) {
 /* jshint strict: true */
 /* globals define */
 
-define('models',[
+AM.define('models',[
   'interaction',
   'script'
 ], function(interaction, script) {

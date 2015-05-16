@@ -1540,8 +1540,8 @@
   // popular enough to be bundled in a third party lib, but not be part of
   // an AMD load request. Those cases could generate an error when an
   // anonymous define() is called outside of a loader request.
-  if (typeof define === 'function' && define.amd) {
-    define('underscore', [], function() {
+  if (typeof AM.define === 'function' && AM.define.amd) {
+    AM.define('underscore', [], function() {
       return _;
     });
   }
@@ -10716,8 +10716,8 @@ jQuery.fn.andSelf = jQuery.fn.addBack;
 // AMD loader is present. jQuery is a special case. For more information, see
 // https://github.com/jrburke/requirejs/wiki/Updating-existing-libraries#wiki-anon
 
-if ( typeof define === "function" && define.amd ) {
-	define( "jquery", [], function() {
+if ( typeof AM.define === 'function' && AM.define.amd ) {
+	AM.define( "jquery", [], function() {
 		return jQuery;
 	});
 }
@@ -10773,8 +10773,8 @@ return jQuery;
             (typeof global == 'object' && global.global == global && global);
 
   // Set up Backbone appropriately for the environment. Start with AMD.
-  if (typeof define === 'function' && define.amd) {
-    define('Backbone',['underscore', 'jquery', 'exports'], function(_, $, exports) {
+  if (typeof AM.define === 'function' && AM.define.amd) {
+    AM.define('Backbone',['underscore', 'jquery', 'exports'], function(_, $, exports) {
       // Export global even in AMD case in case this script is loaded with
       // others that may still expect a global Backbone.
       root.Backbone = factory(root, exports, _, $);
@@ -12630,7 +12630,7 @@ return jQuery;
 /* jshint strict: true */
 /* globals define */
 
-define('utils',['underscore', 'exports'], function(_, exports) {
+AM.define('utils',['underscore', 'exports'], function(_, exports) {
   'use strict';
 
   var VARIABLE_BLOCK_REGEX = /{{\s*\S+\s*}}/g;
@@ -12698,7 +12698,7 @@ define('utils',['underscore', 'exports'], function(_, exports) {
 /* jshint strict: true */
 /* globals define */
 
-define('interaction',[
+AM.define('interaction',[
   'underscore',
   'Backbone',
   'utils'
@@ -12796,7 +12796,7 @@ define('interaction',[
 /* jshint strict: true */
 /* globals define */
 
-define('script',['underscore', 'Backbone'], function(_, Backbone) {
+AM.define('script',['underscore', 'Backbone'], function(_, Backbone) {
   'use strict';
 
   return Backbone.Model.extend({
@@ -12834,7 +12834,7 @@ define('script',['underscore', 'Backbone'], function(_, Backbone) {
 /* jshint strict: true */
 /* globals define */
 
-define('models',[
+AM.define('models',[
   'interaction',
   'script'
 ], function(interaction, script) {

@@ -55,6 +55,7 @@ module.exports = function(grunt) {
           baseUrl: 'src/js',
           optimize: 'none',
           name: 'models',
+          namespace: 'AM',
           out: 'dist/models.js',
           exclude: ['underscore', 'jquery', 'Backbone'],
           paths: paths
@@ -65,6 +66,7 @@ module.exports = function(grunt) {
           baseUrl: 'src/js',
           optimize: 'none',
           name: 'models',
+          namespace: 'AM',
           out: 'dist/models.full.js',
           paths: paths
         }
