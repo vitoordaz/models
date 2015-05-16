@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "repository": {
     "type": "git",
-    "url": "https://bitbucket.org/vitoordaz/models"
+    "url": "https://github.com/vitoordaz/models"
   },
   "main": "dist/models.js",
   "devDependencies": {

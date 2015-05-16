@@ -3,7 +3,6 @@
   "main": [
     "dist/models.js"
   ],
-  "private": true,
   "repository": {
     "type": "git",
     "url": "git@bitbucket.org:vitoordaz/models.git"
