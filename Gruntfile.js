@@ -21,7 +21,8 @@ module.exports = function(grunt) {
   var paths = {
     jquery: '../../vendor/jquery',
     Backbone: '../../vendor/backbone',
-    underscore: '../../vendor/underscore'
+    underscore: '../../vendor/underscore',
+    utils: '../../vendor/utils'
   };
 
   grunt.initConfig({
@@ -57,7 +58,7 @@ module.exports = function(grunt) {
           name: 'models',
           namespace: 'AM',
           out: 'dist/models.js',
-          exclude: ['underscore', 'jquery', 'Backbone'],
+          exclude: ['underscore', 'jquery', 'Backbone', 'utils'],
           paths: paths
         }
       },

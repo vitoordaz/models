@@ -21,14 +21,14 @@
       Backbone: '../../vendor/backbone',
       jquery: '../../vendor/jquery',
       should: '../../vendor/should',
-      underscore: '../../vendor/underscore'
+      underscore: '../../vendor/underscore',
+      utils: '../../vendor/utils'
     }
   });
 
   require([
-    'test-interaction.js',
-    'test-models.js',
-    'test-utils.js'
+    'models/test-interaction.js',
+    'test-models.js'
   ], function() {
     if (window.mochaPhantomJS) {
       mochaPhantomJS.run();

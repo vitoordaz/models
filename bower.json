@@ -10,7 +10,8 @@
   "dependencies": {
     "jquery": "2.1.4",
     "backbone": "1.2.0",
-    "underscore": "1.8.3"
+    "underscore": "1.8.3",
+    "abs-utils": "latest"
   },
   "devDependencies": {
     "requirejs": "latest",
@@ -18,3 +19,4 @@
     "should": "latest"
   }
 }
+

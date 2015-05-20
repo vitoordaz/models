@@ -2,8 +2,8 @@
 /* globals define */
 
 define([
-  'interaction',
-  'script'
+  'models/interaction',
+  'models/script'
 ], function(interaction, script) {
   'use strict';
 

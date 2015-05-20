@@ -3,7 +3,7 @@
 
 define([
   'should',
-  'interaction'
+  'models/interaction'
 ], function(should, Interaction) {
   'use strict';
 
