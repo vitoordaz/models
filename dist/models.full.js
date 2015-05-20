@@ -1540,8 +1540,8 @@
   // popular enough to be bundled in a third party lib, but not be part of
   // an AMD load request. Those cases could generate an error when an
   // anonymous define() is called outside of a loader request.
-  if (typeof AM.define === 'function' && AM.define.amd) {
-    AM.define('underscore', [], function() {
+  if (typeof define === 'function' && define.amd) {
+    define('underscore', [], function() {
       return _;
     });
   }
@@ -10716,8 +10716,8 @@ jQuery.fn.andSelf = jQuery.fn.addBack;
 // AMD loader is present. jQuery is a special case. For more information, see
 // https://github.com/jrburke/requirejs/wiki/Updating-existing-libraries#wiki-anon
 
-if ( typeof AM.define === 'function' && AM.define.amd ) {
-	AM.define( "jquery", [], function() {
+if ( typeof define === "function" && define.amd ) {
+	define( "jquery", [], function() {
 		return jQuery;
 	});
 }
@@ -10773,8 +10773,8 @@ return jQuery;
             (typeof global == 'object' && global.global == global && global);
 
   // Set up Backbone appropriately for the environment. Start with AMD.
-  if (typeof AM.define === 'function' && AM.define.amd) {
-    AM.define('Backbone',['underscore', 'jquery', 'exports'], function(_, $, exports) {
+  if (typeof define === 'function' && define.amd) {
+    define('Backbone',['underscore', 'jquery', 'exports'], function(_, $, exports) {
       // Export global even in AMD case in case this script is loaded with
       // others that may still expect a global Backbone.
       root.Backbone = factory(root, exports, _, $);
@@ -12630,7 +12630,7 @@ return jQuery;
 /* jshint strict: true */
 /* globals define, localStorage, chrome, setTimeout */
 
-AM.define('localstorage',[],function() {
+define('localstorage',[],function() {
   'use strict';
 
   var defer = function(func) {
@@ -12720,7 +12720,7 @@ AM.define('localstorage',[],function() {
 /* jshint strict: true, browser: true */
 /* globals define, chrome */
 
-AM.define('utils/credentials',['localstorage'], function(localstorage) {
+define('utils/credentials',['localstorage'], function(localstorage) {
   'use strict';
 
   return {
@@ -12774,7 +12774,7 @@ AM.define('utils/credentials',['localstorage'], function(localstorage) {
 /* jshint strict: true, browser: true */
 /* globals define, chrome, console */
 
-AM.define('utils',[
+define('utils',[
   'underscore',
   'jquery',
   'exports',
@@ -12998,7 +12998,7 @@ AM.define('utils',[
 /* jshint strict: true */
 /* globals define */
 
-AM.define('models/interaction',[
+define('models/interaction',[
   'underscore',
   'Backbone',
   'utils'
@@ -13096,7 +13096,7 @@ AM.define('models/interaction',[
 /* jshint strict: true */
 /* globals define */
 
-AM.define('models/script',['underscore', 'Backbone'], function(_, Backbone) {
+define('models/script',['underscore', 'Backbone'], function(_, Backbone) {
   'use strict';
 
   return Backbone.Model.extend({
@@ -13134,7 +13134,7 @@ AM.define('models/script',['underscore', 'Backbone'], function(_, Backbone) {
 /* jshint strict: true */
 /* globals define */
 
-AM.define('models',[
+define('models',[
   'models/interaction',
   'models/script'
 ], function(interaction, script) {

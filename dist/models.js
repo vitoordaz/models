@@ -1,7 +1,7 @@
 /* jshint strict: true */
 /* globals define */
 
-AM.define('models/interaction',[
+define('models/interaction',[
   'underscore',
   'Backbone',
   'utils'
@@ -99,7 +99,7 @@ AM.define('models/interaction',[
 /* jshint strict: true */
 /* globals define */
 
-AM.define('models/script',['underscore', 'Backbone'], function(_, Backbone) {
+define('models/script',['underscore', 'Backbone'], function(_, Backbone) {
   'use strict';
 
   return Backbone.Model.extend({
@@ -137,7 +137,7 @@ AM.define('models/script',['underscore', 'Backbone'], function(_, Backbone) {
 /* jshint strict: true */
 /* globals define */
 
-AM.define('models',[
+define('models',[
   'models/interaction',
   'models/script'
 ], function(interaction, script) {
