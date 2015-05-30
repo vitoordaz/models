@@ -101,6 +101,80 @@ define([
         };
         should(model.evaluate(op)).be.eql('foo');
       });
+
+      it('should evaluate "eq" objects', function() {
+        var op = {
+          operator: 'eq',
+          first: '{{ foo }}',
+          second: '{{ bar }}'
+        };
+        should(model.evaluate(op)).be.true;
+
+        model.set('foo', 'something');
+        should(model.evaluate(op)).be.false;
+
+        model.set('bar', 'something');
+        should(model.evaluate(op)).be.true;
+
+        op.second = 'something';
+        should(model.evaluate(op)).be.true;
+
+        model.set('foo', true);
+        op.second = true;
+        should(model.evaluate(op)).be.true;
+
+        model.set('foo', 1);
+        op.second = 1;
+        should(model.evaluate(op)).be.true;
+
+        model.set('foo', 1);
+        op.second = '1';
+        should(model.evaluate(op)).be.false;
+      });
+
+      it('should evaluate "gt" objects', function() {
+        var op = {
+          operator: 'gt',
+          first: '{{ foo }}',
+          second: '{{ bar }}'
+        };
+        model.set('foo', 2);
+        model.set('bar', 1);
+        should(model.evaluate(op)).be.true;
+
+        model.set('foo', 1);
+        should(model.evaluate(op)).be.false;
+
+        op.first = '{{ foo.length }}';
+        model.set('foo', 'something');
+        should(model.evaluate(op)).be.true;
+
+        op.first = '{{ foo.length }}';
+        model.set('foo', [1, 2, 3]);
+        should(model.evaluate(op)).be.true;
+      });
+
+      it('should evaluate "ge" objects', function() {
+        var op = {
+          operator: 'ge',
+          first: '{{ foo }}',
+          second: '{{ bar }}'
+        };
+        model.set('foo', 1);
+        model.set('bar', 1);
+        should(model.evaluate(op)).be.true;
+
+        model.set('foo', 2);
+        should(model.evaluate(op)).be.true;
+
+        op.first = '{{ foo.length }}';
+        model.set('foo', 'something');
+        should(model.evaluate(op)).be.true;
+
+        op.first = '{{ foo.length }}';
+        model.set('foo', [1, 2, 3]);
+        should(model.evaluate(op)).be.true;
+      });
     });
   });
 });

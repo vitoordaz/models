@@ -11,6 +11,13 @@ define([
   return Backbone.Model.extend({
     idAttribute: 'id',
     urlRoot: 'interaction/',
+    initialize: function(attrs, opts) {
+      opts = opts || {};
+      this.context = opts.context || {};
+      if (this.context.call && this.context.call.id) {
+        this.set('call_id', this.context.call.id);
+      }
+    },
     /**
      * Evaluates given value.
      *
@@ -46,6 +53,12 @@ define([
             return this.evaluate(value.negative);
           }
           return this.evaluate(value.positive);
+        } else if (type === 'eq') {
+          return this.evaluate(value.first) === this.evaluate(value.second);
+        } else if (type === 'gt') {
+          return this.evaluate(value.first) > this.evaluate(value.second);
+        } else if (type === 'ge') {
+          return this.evaluate(value.first) >= this.evaluate(value.second);
         } else if (type === 'switch') {  // switch operator
           condition = this.evaluate(value.condition);
           var cases = _.isArray(value.cases) ? value.cases : [value.cases];

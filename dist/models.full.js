@@ -12645,7 +12645,6 @@ define('localstorage',[],function() {
   // Flag to indicate weather init function was called or not.
   var INIT_WAS_CALLED = false;
   var CACHE = {};
-  var SUPPORT_LOCAL_STORAGE = !!window.localStorage;
   var IS_CHROME_APP = window.chrome && chrome.storage && chrome.storage.local;
 
   if (IS_CHROME_APP) {
@@ -12709,10 +12708,10 @@ define('localstorage',[],function() {
 
   return {
     init: defer,
-    clear: localStorage.clear,
-    setItem: localStorage.setItem,
-    getItem: localStorage.getItem,
-    removeItem: localStorage.removeItem
+    clear: localStorage.clear.bind(localStorage),
+    setItem: localStorage.setItem.bind(localStorage),
+    getItem: localStorage.getItem.bind(localStorage),
+    removeItem: localStorage.removeItem.bind(localStorage)
   };
 });
 
@@ -12784,7 +12783,8 @@ define('utils',[
 
   exports.credentials = credentials;
 
-  exports.noop = function() {};
+  exports.noop = function() {
+  };
 
   /**
    * Returns full name string.
@@ -12915,6 +12915,37 @@ define('utils',[
   var VARIABLE_REGEX = /^{{\s*(\S*)\s*}}$/;
 
   /**
+   * Recursively gets property of a given object.
+   * @param obj {Backbone.Model|{}} object to get property.
+   * @param property {string} property name.
+   */
+  exports.getProperty = function(obj, property) {
+    if (_.isUndefined(property)) {
+      return;
+    }
+    var parts = property.split('.');
+    var value = obj;
+    var part;
+    for (var i = 0;
+         i < parts.length && !_.isUndefined(value) && !_.isNull(value);
+         ++i) {
+      part = parts[i];
+      if (_.functions(value).indexOf('get') < 0) {
+        value = value[part];
+      } else {
+        // If object has a get method then we should try to use it first to
+        // get property value.
+        if (_.isUndefined(value.get(part)) && part in value) {
+          value = value[part];
+        } else {
+          value = value.get(part);
+        }
+      }
+    }
+    return value;
+  };
+
+  /**
    * Returns a list of string variables.
    * @param str {string} string with variables
    * @returns {[]}
@@ -12946,7 +12977,7 @@ define('utils',[
       }
       var processVariable = function(variable) {
         var regex = new RegExp('{{\\s*' + variable + '\\s*}}', 'g');
-        var variableValue = context.get(variable);
+        var variableValue = exports.getProperty(context, variable);
         if (!_.isNull(variableValue) && !_.isUndefined(variableValue)) {
           variableValue = variableValue.toString();
         }
@@ -12957,7 +12988,7 @@ define('utils',[
         _.each(variables, processVariable);
       } else {
         var variable = _.first(variables);
-        var variableValue = context.get(variable);
+        var variableValue = exports.getProperty(context, variable);
         var regex = new RegExp('{{\\s*' + variable + '\\s*}}', 'g');
         value = value.replace(regex, '{{' + variable + '}}');
         if (value !== '{{' + variable + '}}') {
@@ -13008,6 +13039,13 @@ define('models/interaction',[
   return Backbone.Model.extend({
     idAttribute: 'id',
     urlRoot: 'interaction/',
+    initialize: function(attrs, opts) {
+      opts = opts || {};
+      this.context = opts.context || {};
+      if (this.context.call && this.context.call.id) {
+        this.set('call_id', this.context.call.id);
+      }
+    },
     /**
      * Evaluates given value.
      *
@@ -13043,6 +13081,12 @@ define('models/interaction',[
             return this.evaluate(value.negative);
           }
           return this.evaluate(value.positive);
+        } else if (type === 'eq') {
+          return this.evaluate(value.first) === this.evaluate(value.second);
+        } else if (type === 'gt') {
+          return this.evaluate(value.first) > this.evaluate(value.second);
+        } else if (type === 'ge') {
+          return this.evaluate(value.first) >= this.evaluate(value.second);
         } else if (type === 'switch') {  // switch operator
           condition = this.evaluate(value.condition);
           var cases = _.isArray(value.cases) ? value.cases : [value.cases];

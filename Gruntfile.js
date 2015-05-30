@@ -22,7 +22,8 @@ module.exports = function(grunt) {
     jquery: '../../vendor/jquery',
     Backbone: '../../vendor/backbone',
     underscore: '../../vendor/underscore',
-    utils: '../../vendor/utils'
+    utils: '../../vendor/utils',
+    localstorage: '../../vendor/localstorage'
   };
 
   grunt.initConfig({
