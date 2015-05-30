@@ -49,10 +49,13 @@ define('models/interaction',[
         var condition;
         if (type === 'if') {  // if operator
           condition = this.evaluate(value.condition);
-          if (_.isEmpty(condition) || !condition) {
-            return this.evaluate(value.negative);
+          if (_.isArray(condition) || _.isObject()) {
+            if (_.isEmpty(condition)) {
+              return this.evaluate(value.negative);
+            }
+            return this.evaluate(value.positive);
           }
-          return this.evaluate(value.positive);
+          return this.evaluate(!!condition ? value.positive : value.negative);
         } else if (type === 'eq') {
           return this.evaluate(value.first) === this.evaluate(value.second);
         } else if (type === 'gt') {

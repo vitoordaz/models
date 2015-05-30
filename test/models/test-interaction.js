@@ -65,10 +65,16 @@ define([
         should(model.evaluate(op)).be.eql('negative');
 
         model.set('var', true);
-        should(model.evaluate(op)).be.eql('negative');
+        should(model.evaluate(op)).be.eql('positive');
 
         model.set('var', []);
         should(model.evaluate(op)).be.eql('negative');
+
+        op.condition = false;
+        should(model.evaluate(op)).be.eql('negative');
+
+        op.condition = true;
+        should(model.evaluate(op)).be.eql('positive');
       });
 
       it('should evaluate "switch" objects', function() {
