@@ -1,6 +1,41 @@
 /* jshint strict: true */
 /* globals define */
 
+define('models/customer',['Backbone', 'utils'], function(Backbone, utils) {
+  'use strict';
+
+  return Backbone.Model.extend({
+    idAttribute: 'id',
+    urlRoot: 'customer/',
+    initialize: function() {
+      this.name = utils.getFullName(
+        this.get('first_name'),
+        this.get('last_name'),
+        this.get('middle_name')
+      );
+    }
+  });
+});
+
+/* jshint strict: true */
+/* globals define */
+
+define('models/customers',['Backbone', './customer'], function(Backbone, Customer) {
+  'use strict';
+
+  return Backbone.Collection.extend({
+    model: Customer,
+    url: 'customer/',
+    parse: function(response) {
+      this.total = response.meta.total;
+      return response.data;
+    }
+  });
+});
+
+/* jshint strict: true */
+/* globals define */
+
 define('models/interaction',[
   'underscore',
   'Backbone',
@@ -154,12 +189,16 @@ define('models/script',['underscore', 'Backbone'], function(_, Backbone) {
 /* globals define */
 
 define('models',[
+  'models/customer',
+  'models/customers',
   'models/interaction',
   'models/script'
-], function(interaction, script) {
+], function(customer, customers, interaction, script) {
   'use strict';
 
   return {
+    Customer: customer,
+    Customers: customers,
     Interaction: interaction,
     Script: script
   };
