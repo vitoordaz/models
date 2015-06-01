@@ -117,6 +117,10 @@ define('models/interaction',[
      * @param step {string} step name.
      */
     nextStep: function(step) {
+      // On this event each controller should update interaction with if it
+      // current value.
+      this.trigger('update-interaction');
+
       step = this.evaluate(step);
       this.set('step', step);
 
