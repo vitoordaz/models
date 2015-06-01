@@ -13147,7 +13147,7 @@ define('models/interaction',[
     nextStep: function(step) {
       // On this event each controller should update interaction with if it
       // current value.
-      this.trigger('update-interaction');
+      this.trigger('before-next-step');
 
       step = this.evaluate(step);
       this.set('step', step);
