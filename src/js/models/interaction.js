@@ -28,6 +28,24 @@ define([
     return model.evaluate(found.value);
   }
 
+  function processFind(model, op) {
+    var where = model.evaluate(op.where);
+    var items;
+    if (where instanceof Backbone.Collection) {
+      items = where.models;
+    } else {
+      items = where;
+    }
+    var property = op.property;
+    var value = model.evaluate(op.value);
+    return _.find(items, function(item) {
+      if (item instanceof Backbone.Model) {
+        return item.get(property) == value;
+      }
+      return item[property] == value;
+    });
+  }
+
   return Backbone.Model.extend({
     idAttribute: 'id',
     urlRoot: 'interaction/',
@@ -68,6 +86,8 @@ define([
         switch (value.operator) {
           case 'if':  // if operator
             return processIf(this, value);
+          case 'find':
+            return processFind(this, value);
           case 'eq':
             return this.evaluate(value.first) == this.evaluate(value.second);
           case 'nq':
@@ -88,7 +108,7 @@ define([
      * @param step {string} step name.
      */
     nextStep: function(step) {
-      // On this event each controller should update interaction with if it
+      // On this event each controller should update interaction with it's
       // current value.
       this.trigger('before-next-step');
 

@@ -204,6 +204,35 @@ define([
         model.set('foo', [1, 2, 3]);
         should(model.evaluate(op)).be.true;
       });
+
+      it('should evaluate "find" objects', function() {
+        var op = {
+          operator: 'find',
+          where: '{{ items }}',
+          property: 'id',
+          value: 4
+        };
+        model.set('items', [{id: 2}, {id: 3}, {id: 4}, {id: 1}]);
+        should(model.evaluate(op)).be.eql({id: 4});
+
+        model.set('items', new Backbone.Collection([{
+          id: 2,
+          name: 'a'
+        }, {
+          id: 3,
+          name: 'b'
+        }, {
+          id: 4,
+          name: 'c'
+        }, {
+          id: 1,
+          name: 'd'
+        }]));
+        should(model.evaluate(op).toJSON()).be.eql({
+          id: 4,
+          name: 'c'
+        });
+      });
     });
   });
 });
