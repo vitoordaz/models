@@ -135,6 +135,29 @@ define([
 
         model.set('foo', 1);
         op.second = '1';
+        should(model.evaluate(op)).be.true;
+      });
+
+      it('should evaluate "nq" objects', function() {
+        var op = {
+          operator: 'nq',
+          first: '{{ foo }}',
+          second: '{{ bar }}'
+        };
+        should(model.evaluate(op)).be.false;
+
+        model.set('foo', 'something');
+        should(model.evaluate(op)).be.true;
+
+        model.set('bar', 'something');
+        should(model.evaluate(op)).be.false;
+
+        model.set('foo', true);
+        op.second = true;
+        should(model.evaluate(op)).be.false;
+
+        model.set('foo', 1);
+        op.second = '1';
         should(model.evaluate(op)).be.false;
       });
 

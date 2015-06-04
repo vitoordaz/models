@@ -43,6 +43,26 @@ define('models/interaction',[
 ], function(_, Backbone, utils) {
   'use strict';
 
+  function processIf(model, op) {
+    var condition = model.evaluate(op.condition);
+    if (_.isArray(condition) || _.isObject(condition)) {
+      return model.evaluate(_.isEmpty(condition) ? op.negative : op.positive);
+    }
+    return model.evaluate(!!condition ? op.positive : op.negative);
+  }
+
+  function processSwitch(model, op) {
+    var condition = model.evaluate(op.condition);
+    var cases = _.isArray(op.cases) ? op.cases : [op.cases];
+    var found = _.find(cases, function(c) {
+      return model.evaluate(c.when) === condition;
+    });
+    if (_.isUndefined(found)) {
+      return model.evaluate(op.defaultValue);
+    }
+    return model.evaluate(found.value);
+  }
+
   return Backbone.Model.extend({
     idAttribute: 'id',
     urlRoot: 'interaction/',
@@ -80,33 +100,19 @@ define('models/interaction',[
         // If a given value is an array we should evaluate each array item.
         return _.map(value, this.evaluate.bind(this));
       } else if (_.isObject(value) && _.has(value, 'operator')) {
-        var type = value.operator;
-        var condition;
-        if (type === 'if') {  // if operator
-          condition = this.evaluate(value.condition);
-          if (_.isArray(condition) || _.isObject()) {
-            if (_.isEmpty(condition)) {
-              return this.evaluate(value.negative);
-            }
-            return this.evaluate(value.positive);
-          }
-          return this.evaluate(!!condition ? value.positive : value.negative);
-        } else if (type === 'eq') {
-          return this.evaluate(value.first) === this.evaluate(value.second);
-        } else if (type === 'gt') {
-          return this.evaluate(value.first) > this.evaluate(value.second);
-        } else if (type === 'ge') {
-          return this.evaluate(value.first) >= this.evaluate(value.second);
-        } else if (type === 'switch') {  // switch operator
-          condition = this.evaluate(value.condition);
-          var cases = _.isArray(value.cases) ? value.cases : [value.cases];
-          for (var i = 0, len = cases.length; i < len; i++) {
-            var c = cases[i];
-            if (this.evaluate(c.when) === condition) {
-              return this.evaluate(c.value);
-            }
-          }
-          return this.evaluate(value.defaultValue);
+        switch (value.operator) {
+          case 'if':  // if operator
+            return processIf(this, value);
+          case 'eq':
+            return this.evaluate(value.first) == this.evaluate(value.second);
+          case 'nq':
+            return this.evaluate(value.first) != this.evaluate(value.second);
+          case 'gt':
+            return this.evaluate(value.first) > this.evaluate(value.second);
+          case 'ge':
+            return this.evaluate(value.first) >= this.evaluate(value.second);
+          case 'switch':  // switch operator
+            return processSwitch(this, value);
         }
       }
       return value;
