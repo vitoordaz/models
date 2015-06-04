@@ -13101,12 +13101,13 @@ define('models/interaction',[
     }
     var property = op.property;
     var value = model.evaluate(op.value);
-    return _.find(items, function(item) {
+    var result = _.find(items, function(item) {
       if (item instanceof Backbone.Model) {
         return item.get(property) == value;
       }
       return item[property] == value;
     });
+    return result instanceof Backbone.Model ? result.toJSON() : result;
   }
 
   return Backbone.Model.extend({

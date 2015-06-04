@@ -228,7 +228,7 @@ define([
           id: 1,
           name: 'd'
         }]));
-        should(model.evaluate(op).toJSON()).be.eql({
+        should(model.evaluate(op)).be.eql({
           id: 4,
           name: 'c'
         });
