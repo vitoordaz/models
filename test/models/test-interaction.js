@@ -2,9 +2,10 @@
 /* globals define, beforeEach, it */
 
 define([
+  'jquery',
   'should',
   'models/interaction'
-], function(should, Interaction) {
+], function($, should, Interaction) {
   'use strict';
 
   var model;
@@ -15,39 +16,69 @@ define([
 
   describe('Test Interaction model', function() {
     describe('Test evaluate method', function() {
-      it('should just return given value if it is null', function() {
-        should(model.evaluate(null)).be.null;
+      it('should just return given value if it is null', function(done) {
+        model.evaluate(null).always(function(v) {
+          should(v).be.null;
+          done();
+        });
       });
 
-      it('should just return given value if it is undefined', function() {
-        should(model.evaluate()).be.undefined;
-        should(model.evaluate(undefined)).be.undefined;
+      it('should just return given value if it is undefined', function(done) {
+        $.when(model.evaluate(), model.evaluate(undefined))
+          .always(function(v1, v2) {
+            should(v1).be.undefined;
+            should(v2).be.undefined;
+            done();
+          });
       });
 
-      it('should just return given value if it is boolean', function() {
-        should(model.evaluate(true)).be.true;
-        should(model.evaluate(false)).be.false;
+      it('should just return given value if it is boolean', function(done) {
+        $.when(model.evaluate(true), model.evaluate(false))
+          .always(function(v1, v2) {
+            should(v1).be.true;
+            should(v2).be.false;
+            done();
+          });
       });
 
-      it('should evaluate strings', function() {
-        should(model.evaluate('blah')).be.eql('blah');
+      it('should evaluate strings', function(done) {
+        model.evaluate('blah').always(function(v) {
+          should(v).be.eql('blah');
 
-        model.set('var', 'value');
-        should(model.evaluate('{{ var }}')).be.eql('value');
+          model.set('var', 'value');
+          model.evaluate('{{ var }}').always(function(v) {
+            should(v).be.eql('value');
 
-        model.set('var', true);
-        should(model.evaluate('{{ var }}')).be.true;
+            model.set('var', true);
+            model.evaluate('{{ var }}').always(function(v) {
+              should(v).be.true;
+              done();
+            });
+          });
+        });
       });
 
-      it('should evaluate each item if given value is an array', function() {
-        should(model.evaluate([])).be.eql([]);
-        should(model.evaluate([null])).be.eql([null]);
-        should(model.evaluate([undefined])).be.eql([undefined]);
-        should(model.evaluate([true, false])).be.eql([true, false]);
-        should(model.evaluate(['string', false])).be.eql(['string', false]);
-      });
+      it(
+        'should evaluate each item if given value is an array',
+        function(done) {
+          $.when(
+            model.evaluate([]),
+            model.evaluate([null]),
+            model.evaluate([undefined]),
+            model.evaluate([true, false]),
+            model.evaluate(['string', false])
+          ).always(function(v1, v2, v3, v4, v5) {
+              should(v1).be.eql([]);
+              should(v2).be.eql([null]);
+              should(v3).be.eql([undefined]);
+              should(v4).be.eql([true, false]);
+              should(v5).be.eql(['string', false]);
+              done();
+            });
+        }
+      );
 
-      it('should evaluate "if" objects', function() {
+      it('should evaluate "if" objects', function(done) {
         var op = {
           operator: 'if',
           condition: '',
@@ -55,29 +86,44 @@ define([
           negative: 'negative'
         };
 
-        should(model.evaluate(op)).be.eql('negative');
+        model.evaluate(op).then(function(v) {
+          should(v).be.eql('negative');
 
-        op.condition = '1';
-        should(model.evaluate(op)).be.eql('positive');
+          op.condition = '1';
+          model.evaluate(op).always(function(v) {
+            should(v).be.eql('positive');
 
-        op.condition = '{{ var }}';
-        model.set('var', false);
-        should(model.evaluate(op)).be.eql('negative');
+            op.condition = '{{ var }}';
+            model.set('var', false);
+            model.evaluate(op).always(function(v) {
+              should(v).be.eql('negative');
 
-        model.set('var', true);
-        should(model.evaluate(op)).be.eql('positive');
+              model.set('var', true);
+              model.evaluate(op).always(function(v) {
+                should(v).be.eql('positive');
 
-        model.set('var', []);
-        should(model.evaluate(op)).be.eql('negative');
+                model.set('var', []);
+                model.evaluate(op).always(function(v) {
+                  should(v).be.eql('negative');
 
-        op.condition = false;
-        should(model.evaluate(op)).be.eql('negative');
+                  op.condition = false;
+                  model.evaluate(op).always(function(v) {
+                    should(v).be.eql('negative');
 
-        op.condition = true;
-        should(model.evaluate(op)).be.eql('positive');
+                    op.condition = true;
+                    model.evaluate(op).always(function(v) {
+                      should(v).be.eql('positive');
+                      done();
+                    });
+                  });
+                });
+              });
+            });
+          });
+        });
       });
 
-      it('should evaluate "switch" objects', function() {
+      it('should evaluate "switch" objects', function(done) {
         var op = {
           operator: 'switch',
           condition: '',
@@ -90,78 +136,115 @@ define([
             value: 'blah'
           }]
         };
-        should(model.evaluate(op)).be.false;
+        model.evaluate(op).always(function(v) {
+          should(v).be.false;
 
-        model.set('var', 'blah');
-        op.condition = '{{ var }}';
-        should(model.evaluate(op)).be.eql('default');
+          model.set('var', 'blah');
+          op.condition = '{{ var }}';
+          model.evaluate(op).always(function(v) {
+            should(v).be.eql('default');
 
-        model.set('var', 'foo');
-        should(model.evaluate(op)).be.eql('blah');
+            model.set('var', 'foo');
+            model.evaluate(op).always(function(v) {
+              should(v).be.eql('blah');
 
-        model.set('var', 'blah');
-        op.condition = '{{ var }}';
-        op.cases = {
-          when: 'blah',
-          value: 'foo'
-        };
-        should(model.evaluate(op)).be.eql('foo');
+              model.set('var', 'blah');
+              op.condition = '{{ var }}';
+              op.cases = {
+                when: 'blah',
+                value: 'foo'
+              };
+              model.evaluate(op).always(function(v) {
+                should(v).be.eql('foo');
+
+                done();
+              });
+            });
+          });
+        });
       });
 
-      it('should evaluate "eq" objects', function() {
+      it('should evaluate "eq" objects', function(done) {
         var op = {
           operator: 'eq',
           first: '{{ foo }}',
           second: '{{ bar }}'
         };
-        should(model.evaluate(op)).be.true;
+        model.evaluate(op).always(function(v) {
+          should(v).be.true;
 
-        model.set('foo', 'something');
-        should(model.evaluate(op)).be.false;
+          model.set('foo', 'something');
+          model.evaluate(op).always(function(v) {
+            should(v).be.false;
 
-        model.set('bar', 'something');
-        should(model.evaluate(op)).be.true;
+            model.set('bar', 'something');
+            model.evaluate(op).always(function(v) {
+              should(v).be.true;
 
-        op.second = 'something';
-        should(model.evaluate(op)).be.true;
+              op.second = 'something';
+              model.evaluate(op).always(function(v) {
+                should(v).be.true;
 
-        model.set('foo', true);
-        op.second = true;
-        should(model.evaluate(op)).be.true;
+                model.set('foo', true);
+                op.second = true;
+                model.evaluate(op).always(function(v) {
+                  should(v).be.true;
 
-        model.set('foo', 1);
-        op.second = 1;
-        should(model.evaluate(op)).be.true;
+                  model.set('foo', 1);
+                  op.second = 1;
+                  model.evaluate(op).always(function() {
+                    should(v).be.true;
 
-        model.set('foo', 1);
-        op.second = '1';
-        should(model.evaluate(op)).be.true;
+                    model.set('foo', 1);
+                    op.second = '1';
+                    model.evaluate(op).always(function(v) {
+                      should(v).be.true;
+                      done();
+                    });
+                  });
+                });
+              });
+            });
+          });
+        });
       });
 
-      it('should evaluate "nq" objects', function() {
+      it('should evaluate "nq" objects', function(done) {
         var op = {
           operator: 'nq',
           first: '{{ foo }}',
           second: '{{ bar }}'
         };
-        should(model.evaluate(op)).be.false;
+        model.evaluate(op).always(function(v) {
+          should(v).be.false;
 
-        model.set('foo', 'something');
-        should(model.evaluate(op)).be.true;
+          model.set('foo', 'something');
+          model.evaluate(op).always(function(v) {
+            should(v).be.true;
 
-        model.set('bar', 'something');
-        should(model.evaluate(op)).be.false;
+            model.set('bar', 'something');
+            model.evaluate(op).always(function(v) {
+              should(v).be.false;
 
-        model.set('foo', true);
-        op.second = true;
-        should(model.evaluate(op)).be.false;
+              model.set('foo', true);
+              op.second = true;
+              model.evaluate(op).always(function(v) {
+                should(v).be.false;
 
-        model.set('foo', 1);
-        op.second = '1';
-        should(model.evaluate(op)).be.false;
+                model.set('foo', 1);
+                op.second = '1';
+                model.evaluate(op).always(function(v) {
+                  should(v).be.false;
+
+                  done();
+                });
+              });
+            });
+          });
+        });
       });
 
-      it('should evaluate "gt" objects', function() {
+      it('should evaluate "gt" objects', function(done) {
         var op = {
           operator: 'gt',
           first: '{{ foo }}',
@@ -169,21 +252,31 @@ define([
         };
         model.set('foo', 2);
         model.set('bar', 1);
-        should(model.evaluate(op)).be.true;
+        model.evaluate(op).always(function(v) {
+          should(v).be.true;
 
-        model.set('foo', 1);
-        should(model.evaluate(op)).be.false;
+          model.set('foo', 1);
+          model.evaluate(op).always(function(v) {
+            should(v).be.false;
 
-        op.first = '{{ foo.length }}';
-        model.set('foo', 'something');
-        should(model.evaluate(op)).be.true;
+            op.first = '{{ foo.length }}';
+            model.set('foo', 'something');
+            model.evaluate(op).always(function(v) {
+              should(v).be.true;
 
-        op.first = '{{ foo.length }}';
-        model.set('foo', [1, 2, 3]);
-        should(model.evaluate(op)).be.true;
+              op.first = '{{ foo.length }}';
+              model.set('foo', [1, 2, 3]);
+              model.evaluate(op).always(function(v) {
+                should(v).be.true;
+
+                done();
+              });
+            });
+          });
+        });
       });
 
-      it('should evaluate "ge" objects', function() {
+      it('should evaluate "ge" objects', function(done) {
         var op = {
           operator: 'ge',
           first: '{{ foo }}',
@@ -191,21 +284,31 @@ define([
         };
         model.set('foo', 1);
         model.set('bar', 1);
-        should(model.evaluate(op)).be.true;
+        model.evaluate(op).always(function(v) {
+          should(v).be.true;
 
-        model.set('foo', 2);
-        should(model.evaluate(op)).be.true;
+          model.set('foo', 2);
+          model.evaluate(op).always(function(v) {
+            should(v).be.true;
 
-        op.first = '{{ foo.length }}';
-        model.set('foo', 'something');
-        should(model.evaluate(op)).be.true;
+            op.first = '{{ foo.length }}';
+            model.set('foo', 'something');
+            model.evaluate(op).always(function(v) {
+              should(v).be.true;
 
-        op.first = '{{ foo.length }}';
-        model.set('foo', [1, 2, 3]);
-        should(model.evaluate(op)).be.true;
+              op.first = '{{ foo.length }}';
+              model.set('foo', [1, 2, 3]);
+              model.evaluate(op).always(function(v) {
+                should(v).be.true;
+
+                done();
+              });
+            });
+          });
+        });
       });
 
-      it('should evaluate "find" objects', function() {
+      it('should evaluate "find" objects', function(done) {
         var op = {
           operator: 'find',
           where: '{{ items }}',
@@ -213,24 +316,29 @@ define([
           value: 4
         };
         model.set('items', [{id: 2}, {id: 3}, {id: 4}, {id: 1}]);
-        should(model.evaluate(op)).be.eql({id: 4});
+        model.evaluate(op).always(function(v) {
+          should(v).be.eql({id: 4});
 
-        model.set('items', new Backbone.Collection([{
-          id: 2,
-          name: 'a'
-        }, {
-          id: 3,
-          name: 'b'
-        }, {
-          id: 4,
-          name: 'c'
-        }, {
-          id: 1,
-          name: 'd'
-        }]));
-        should(model.evaluate(op)).be.eql({
-          id: 4,
-          name: 'c'
+          model.set('items', new Backbone.Collection([{
+            id: 2,
+            name: 'a'
+          }, {
+            id: 3,
+            name: 'b'
+          }, {
+            id: 4,
+            name: 'c'
+          }, {
+            id: 1,
+            name: 'd'
+          }]));
+          model.evaluate(op).always(function(v) {
+            should(v).be.eql({
+              id: 4,
+              name: 'c'
+            });
+            done();
+          });
         });
       });
     });

@@ -13065,49 +13065,58 @@ define('models/customers',['Backbone', './customer'], function(Backbone, Custome
 /* globals define */
 
 define('models/interaction',[
+  'jquery',
   'underscore',
   'Backbone',
   'utils'
-], function(_, Backbone, utils) {
+], function($, _, Backbone, utils) {
   'use strict';
 
   function processIf(model, op) {
-    var condition = model.evaluate(op.condition);
-    if (_.isArray(condition) || _.isObject(condition)) {
-      return model.evaluate(_.isEmpty(condition) ? op.negative : op.positive);
-    }
-    return model.evaluate(!!condition ? op.positive : op.negative);
+    return model.evaluate(op.condition)
+      .then(function(condition) {
+        var v;
+        if (_.isArray(condition) || _.isObject(condition)) {
+          v = _.isEmpty(condition) ? op.negative : op.positive;
+        } else {
+          v = !!condition ? op.positive : op.negative;
+        }
+        return model.evaluate(v);
+      });
   }
 
   function processSwitch(model, op) {
-    var condition = model.evaluate(op.condition);
-    var cases = _.isArray(op.cases) ? op.cases : [op.cases];
-    var found = _.find(cases, function(c) {
-      return model.evaluate(c.when) === condition;
+    return model.evaluate(op.condition).then(function(condition) {
+      var cases = _.isArray(op.cases) ? op.cases : [op.cases];
+      var promises = _.map(cases, function(c) {
+        return model.evaluate(c.when).then(function(r) {
+          return {when: r, value: c.value};
+        });
+      });
+      return $.when.apply($, promises).then(function() {
+        var f = _.find(arguments, function(c) {
+          return c.when == condition;
+        });
+        return model.evaluate(_.isUndefined(f) ? op.defaultValue : f.value);
+      });
     });
-    if (_.isUndefined(found)) {
-      return model.evaluate(op.defaultValue);
-    }
-    return model.evaluate(found.value);
   }
 
   function processFind(model, op) {
-    var where = model.evaluate(op.where);
-    var items;
-    if (where instanceof Backbone.Collection) {
-      items = where.models;
-    } else {
-      items = where;
-    }
-    var property = op.property;
-    var value = model.evaluate(op.value);
-    var result = _.find(items, function(item) {
-      if (item instanceof Backbone.Model) {
-        return item.get(property) == value;
-      }
-      return item[property] == value;
-    });
-    return result instanceof Backbone.Model ? result.toJSON() : result;
+    return $.when(model.evaluate(op.where), model.evaluate(op.value))
+      .then(function(where, value) {
+        var property = op.property;
+        if (where instanceof Backbone.Collection) {
+          where = where.models;
+        }
+        var r = _.find(where, function(item) {
+          if (item instanceof Backbone.Model) {
+            return item.get(property) == value;
+          }
+          return item[property] == value;
+        });
+        return r instanceof Backbone.Model ? r.toJSON() : r;
+      });
   }
 
   return Backbone.Model.extend({
@@ -13137,34 +13146,70 @@ define('models/interaction',[
      *   evaluate value based on operator type.
      *
      * @param value {*} value to evaluate.
+     * @returns {$.Promise} promise object.
      */
     evaluate: function(value) {
-      if (_.isNull(value) || _.isUndefined(value) || _.isBoolean(value)) {
-        return value;
-      } else if (_.isString(value)) {
-        return utils.interpolateValueString(this, value);
-      } else if (_.isArray(value)) {
-        // If a given value is an array we should evaluate each array item.
-        return _.map(value, this.evaluate.bind(this));
-      } else if (_.isObject(value) && _.has(value, 'operator')) {
-        switch (value.operator) {
-          case 'if':  // if operator
-            return processIf(this, value);
-          case 'find':
-            return processFind(this, value);
-          case 'eq':
-            return this.evaluate(value.first) == this.evaluate(value.second);
-          case 'nq':
-            return this.evaluate(value.first) != this.evaluate(value.second);
-          case 'gt':
-            return this.evaluate(value.first) > this.evaluate(value.second);
-          case 'ge':
-            return this.evaluate(value.first) >= this.evaluate(value.second);
-          case 'switch':  // switch operator
-            return processSwitch(this, value);
+      var deferred = $.Deferred();
+
+      _.defer(function() {
+        if (_.isNull(value) || _.isUndefined(value) || _.isBoolean(value)) {
+          deferred.resolve(value);
+        } else if (_.isString(value)) {
+          deferred.resolve(utils.interpolateValueString(this, value));
+        } else if (_.isArray(value)) {
+          // If a given value is an array we should evaluate each array item.
+          $.when.apply($, _.map(value, this.evaluate.bind(this)))
+            .then(function() {
+              deferred.resolve(Array.prototype.slice.call(arguments));
+            })
+            .fail(function() {
+              deferred.reject(Array.prototype.slice.call(arguments));
+            });
+          //return _.map(value, this.evaluate.bind(this));
+        } else if (_.isObject(value) && _.has(value, 'operator')) {
+          if (value.operator === 'if') {
+            processIf(this, value)
+              .then(deferred.resolve)
+              .fail(deferred.reject);
+          } else if (value.operator === 'switch') {
+            processSwitch(this, value)
+              .then(deferred.resolve)
+              .fail(deferred.reject);
+          } else if (value.operator === 'find') {
+            processFind(this, value)
+              .then(deferred.resolve)
+              .fail(deferred.reject);
+          } else {
+            $.when(this.evaluate(value.first), this.evaluate(value.second))
+              .then(function(first, second) {
+                switch (value.operator) {
+                  case 'eq':
+                    deferred.resolve(first == second);
+                    break;
+                  case 'nq':
+                    deferred.resolve(first != second);
+                    break;
+                  case 'gt':
+                    deferred.resolve(first > second);
+                    break;
+                  case 'lt':
+                    deferred.resolve(first < second);
+                    break;
+                  case 'ge':
+                    deferred.resolve(first >= second);
+                    break;
+                  case 'le':
+                    deferred.resolve(first <= second);
+                    break;
+                }
+              });
+          }
+        } else {
+          deferred.resolve(value);
         }
-      }
-      return value;
+      }.bind(this));
+
+      return deferred.promise();
     },
     /**
      * Updates current interaction step to a given step and triggers
