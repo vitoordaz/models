@@ -13219,16 +13219,17 @@ define('models/interaction',[
     nextStep: function(step) {
       // On this event each controller should update interaction with it's
       // current value.
-      this.trigger('before-next-step');
+      return this.evaluate(step).then(_.bind(function(step) {
+        this.trigger('before-next-step');
 
-      step = this.evaluate(step);
-      this.set('step', step);
+        this.set('step', step);
 
-      var steps = this.get('steps') || [];
-      steps.push(step);
-      this.set('steps', steps);
+        var steps = this.get('steps') || [];
+        steps.push(step);
+        this.set('steps', steps);
 
-      this.trigger('next-step');
+        this.trigger('next-step');
+      }, this));
     },
     /**
      * Updates current interaction step to the previous step and triggers
