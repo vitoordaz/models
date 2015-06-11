@@ -86,72 +86,57 @@ define([
      * @returns {$.Promise} promise object.
      */
     evaluate: function(value) {
-      var deferred = $.Deferred();
-
-      _.defer(function() {
-        if (_.isNull(value) || _.isUndefined(value) || _.isBoolean(value)) {
-          deferred.resolve(value);
-        } else if (_.isString(value)) {
-          deferred.resolve(utils.interpolateValueString(this, value));
-        } else if (_.isArray(value)) {
-          // If a given value is an array we should evaluate each array item.
-          $.when.apply($, _.map(value, this.evaluate.bind(this)))
-            .then(function() {
-              deferred.resolve(Array.prototype.slice.call(arguments));
-            })
-            .fail(function() {
-              deferred.reject(Array.prototype.slice.call(arguments));
-            });
-          //return _.map(value, this.evaluate.bind(this));
-        } else if (_.isObject(value) && _.has(value, 'operator')) {
-          if (value.operator === 'if') {
-            processIf(this, value)
-              .then(deferred.resolve)
-              .fail(deferred.reject);
-          } else if (value.operator === 'switch') {
-            processSwitch(this, value)
-              .then(deferred.resolve)
-              .fail(deferred.reject);
-          } else if (value.operator === 'find') {
-            processFind(this, value)
-              .then(deferred.resolve)
-              .fail(deferred.reject);
-          } else {
-            $.when(this.evaluate(value.first), this.evaluate(value.second))
-              .then(function(first, second) {
-                switch (value.operator) {
-                  case 'eq':
-                    deferred.resolve(first == second);
-                    break;
-                  case 'nq':
-                    deferred.resolve(first != second);
-                    break;
-                  case 'gt':
-                    deferred.resolve(first > second);
-                    break;
-                  case 'lt':
-                    deferred.resolve(first < second);
-                    break;
-                  case 'ge':
-                    deferred.resolve(first >= second);
-                    break;
-                  case 'le':
-                    deferred.resolve(first <= second);
-                    break;
-                }
-              });
-          }
-        } else {
-          deferred.resolve(value);
+      if (_.isNull(value) || _.isUndefined(value) || _.isBoolean(value)) {
+        return $.Deferred().resolve(value);
+      }
+      if (_.isString(value)) {
+        return $.Deferred().resolve(
+          utils.interpolateValueString(this, value));
+      }
+      if (_.isArray(value)) {
+        // If a given value is an array we should evaluate each array item.
+        return $.when.apply($, _.map(value, this.evaluate.bind(this)))
+          .then(function() {
+            return Array.prototype.slice.call(arguments);
+          });
+      }
+      if (_.isObject(value) && _.has(value, 'operator')) {
+        if (value.operator === 'if') {
+          return processIf(this, value);
         }
-      }.bind(this));
-
-      return deferred.promise();
+        if (value.operator === 'switch') {
+          return processSwitch(this, value);
+        }
+        if (value.operator === 'find') {
+          return processFind(this, value);
+        }
+        return $.when(
+          this.evaluate(value.first),
+          this.evaluate(value.second)
+        ).then(function(first, second) {
+            switch (value.operator) {
+              case 'eq':
+                return first == second;
+              case 'nq':
+                return first != second;
+              case 'gt':
+                return first > second;
+              case 'lt':
+                return first < second;
+              case 'ge':
+                return first >= second;
+              case 'le':
+                return first <= second;
+            }
+          });
+      }
+      return $.Deferred().resolve(value);
     },
     /**
      * Updates current interaction step to a given step and triggers
      * 'next-step' event.
      * @param step {string} step name.
+     * @returns {$.Promise} promise object.
      */
     nextStep: function(step) {
       // On this event each controller should update interaction with it's
