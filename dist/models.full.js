@@ -13278,19 +13278,51 @@ define('models/script',['underscore', 'Backbone'], function(_, Backbone) {
 /* jshint strict: true */
 /* globals define */
 
+define('models/vehicle',['Backbone'], function(Backbone) {
+  'use strict';
+
+  return Backbone.Model.extend({
+    idAttribute: 'id',
+    urlRoot: 'vehicle/'
+  });
+});
+
+/* jshint strict: true */
+/* globals define */
+
+define('models/vehicles',['Backbone', './vehicle'], function(Backbone, Vehicle) {
+  'use strict';
+
+  return Backbone.Collection.extend({
+    model: Vehicle,
+    url: 'vehicle/',
+    parse: function(response) {
+      this.total = response.meta.total;
+      return response.data;
+    }
+  });
+});
+
+/* jshint strict: true */
+/* globals define */
+
 define('models',[
   'models/customer',
   'models/customers',
   'models/interaction',
-  'models/script'
-], function(customer, customers, interaction, script) {
+  'models/script',
+  'models/vehicle',
+  'models/vehicles'
+], function(customer, customers, interaction, script, vehicle, vehicles) {
   'use strict';
 
   return {
     Customer: customer,
     Customers: customers,
     Interaction: interaction,
-    Script: script
+    Script: script,
+    Vehicle: vehicle,
+    Vehicles: vehicles
   };
 });
 
