@@ -5,14 +5,18 @@ define([
   'models/customer',
   'models/customers',
   'models/interaction',
-  'models/script'
-], function(customer, customers, interaction, script) {
+  'models/script',
+  'models/vehicle',
+  'models/vehicles'
+], function(customer, customers, interaction, script, vehicle, vehicles) {
   'use strict';
 
   return {
     Customer: customer,
     Customers: customers,
     Interaction: interaction,
-    Script: script
+    Script: script,
+    Vehicle: vehicle,
+    Vehicles: vehicles
   };
 });
