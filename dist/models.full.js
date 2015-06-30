@@ -13275,6 +13275,18 @@ define('models/script',['underscore', 'Backbone'], function(_, Backbone) {
   });
 });
 
+/* jshint strict: true, browser: true */
+/* globals define */
+
+define('models/user',['Backbone'], function(Backbone) {
+  'use strict';
+
+  return Backbone.Model.extend({
+    idAttribute: 'id',
+    urlRoot: 'user/'
+  });
+});
+
 /* jshint strict: true */
 /* globals define */
 
@@ -13311,9 +13323,11 @@ define('models',[
   'models/customers',
   'models/interaction',
   'models/script',
+  'models/user',
   'models/vehicle',
   'models/vehicles'
-], function(customer, customers, interaction, script, vehicle, vehicles) {
+], function(customer, customers, interaction, script, user, vehicle,
+            vehicles) {
   'use strict';
 
   return {
@@ -13321,6 +13335,7 @@ define('models',[
     Customers: customers,
     Interaction: interaction,
     Script: script,
+    User: user,
     Vehicle: vehicle,
     Vehicles: vehicles
   };
