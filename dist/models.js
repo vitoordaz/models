@@ -1,3 +1,15 @@
+/* jshint strict: true, browser: true */
+/* globals define */
+
+define('models/call',['Backbone'], function(Backbone) {
+  'use strict';
+
+  return Backbone.Model.extend({
+    idAttribute: 'id',
+    urlRoot: 'call/'
+  });
+});
+
 /* jshint strict: true */
 /* globals define */
 
@@ -291,6 +303,7 @@ define('models/vehicles',['Backbone', './vehicle'], function(Backbone, Vehicle) 
 /* globals define */
 
 define('models',[
+  'models/call',
   'models/customer',
   'models/customers',
   'models/interaction',
@@ -298,11 +311,12 @@ define('models',[
   'models/user',
   'models/vehicle',
   'models/vehicles'
-], function(customer, customers, interaction, script, user, vehicle,
+], function(call, customer, customers, interaction, script, user, vehicle,
             vehicles) {
   'use strict';
 
   return {
+    Call: call,
     Customer: customer,
     Customers: customers,
     Interaction: interaction,

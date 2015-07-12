@@ -2,6 +2,7 @@
 /* globals define */
 
 define([
+  'models/call',
   'models/customer',
   'models/customers',
   'models/interaction',
@@ -9,11 +10,12 @@ define([
   'models/user',
   'models/vehicle',
   'models/vehicles'
-], function(customer, customers, interaction, script, user, vehicle,
+], function(call, customer, customers, interaction, script, user, vehicle,
             vehicles) {
   'use strict';
 
   return {
+    Call: call,
     Customer: customer,
     Customers: customers,
     Interaction: interaction,
