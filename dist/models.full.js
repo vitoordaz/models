@@ -13371,6 +13371,7 @@ define('models/vehicles',['Backbone', './vehicle'], function(Backbone, Vehicle) 
 /* globals define */
 
 define('models',[
+  'underscore',
   'utils',
   'models/call',
   'models/customer',
@@ -13380,13 +13381,25 @@ define('models',[
   'models/user',
   'models/vehicle',
   'models/vehicles'
-], function(utils, call, customer, customers, interaction, script, user,
+], function(_, utils, call, customer, customers, interaction, script, user,
             vehicle, vehicles) {
   'use strict';
 
   var originalSync = Backbone.sync;
 
   Backbone.sync = function(method, model, options) {
+    var url = _.result(model, 'url');
+    if (!options.url && url) {
+      options.url = config.apiServer;
+      if (_.last(options.url) !== '/') {
+        options.url += '/';
+      }
+      if (_.first(url) === '/') {
+        options.url += url.substr(1);
+      } else {
+        options.url += url;
+      }
+    }
     return utils.credentials.get()
       .then(function(credentials) {
         options.headers = options.headers || {};

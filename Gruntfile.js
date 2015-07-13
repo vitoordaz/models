@@ -36,6 +36,7 @@ module.exports = function(grunt) {
       ],
       options: {
         strict: true,
+        browser: true,
         indent: 2,
         maxlen: 80
       }
@@ -58,7 +59,7 @@ module.exports = function(grunt) {
           optimize: 'none',
           name: 'models',
           out: 'dist/models.js',
-          exclude: ['underscore', 'jquery', 'Backbone', 'utils'],
+          exclude: ['underscore', 'jquery', 'Backbone', 'utils', 'config'],
           paths: paths
         }
       },
