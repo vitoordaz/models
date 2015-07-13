@@ -12627,22 +12627,10 @@ return jQuery;
 
 }));
 
-/* jshint strict: true, browser: true */
-/* globals define */
-
-define('models/call',['Backbone'], function(Backbone) {
-  'use strict';
-
-  return Backbone.Model.extend({
-    idAttribute: 'id',
-    urlRoot: 'call/'
-  });
-});
-
 /* jshint strict: true */
 /* globals define, localStorage, chrome, setTimeout */
 
-define('localstorage',[],function() {
+define('localstorage',['underscore'], function(_) {
   'use strict';
 
   var defer = function(func) {
@@ -12671,7 +12659,7 @@ define('localstorage',[],function() {
         });
       },
       clear: function(cb) {
-        if (!INIT_WAS_CALLED) {
+        if (!INIT_WAS_CALLED && !cb) {
           throw Error('localstorage.init was not called');
         }
         cb = cb || noop;
@@ -12681,7 +12669,7 @@ define('localstorage',[],function() {
         CACHE = {};
       },
       setItem: function(name, value, cb) {
-        if (!INIT_WAS_CALLED) {
+        if (!INIT_WAS_CALLED && !cb) {
           throw Error('localstorage.init was not called');
         }
         cb = cb || noop;
@@ -12693,7 +12681,7 @@ define('localstorage',[],function() {
         CACHE[name] = value;
       },
       getItem: function(name, cb) {
-        if (!INIT_WAS_CALLED) {
+        if (!INIT_WAS_CALLED && !cb) {
           throw Error('localstorage.init was not called');
         }
         cb = cb || noop;
@@ -12706,7 +12694,7 @@ define('localstorage',[],function() {
         return CACHE[name];
       },
       removeItem: function(name, cb) {
-        if (!INIT_WAS_CALLED) {
+        if (!INIT_WAS_CALLED && !cb) {
           throw Error('localstorage.init was not called');
         }
         cb = cb || noop;
@@ -12720,10 +12708,10 @@ define('localstorage',[],function() {
 
   return {
     init: defer,
-    clear: localStorage.clear.bind(localStorage),
-    setItem: localStorage.setItem.bind(localStorage),
-    getItem: localStorage.getItem.bind(localStorage),
-    removeItem: localStorage.removeItem.bind(localStorage)
+    clear: _.bind(localStorage.clear, localStorage),
+    setItem: _.bind(localStorage.setItem, localStorage),
+    getItem: _.bind(localStorage.getItem, localStorage),
+    removeItem: _.bind(localStorage.removeItem, localStorage)
   };
 });
 
@@ -12731,37 +12719,31 @@ define('localstorage',[],function() {
 /* jshint strict: true, browser: true */
 /* globals define, chrome */
 
-define('utils/credentials',['localstorage'], function(localstorage) {
+define('utils/credentials',['jquery', 'localstorage'], function($, localstorage) {
   'use strict';
 
   return {
     /**
-     * Loads user credentials.
-     * If callback function is given credentials will be passed to callback
-     * function else this function will return credentials.
-     * @param cb {function} callback function to call after credentials loaded.
-     * @returns {{key: string, secret: string}} if callback function is not
-     *                                          given.
+     * Loads user credentials from local storage.
+     * @returns {$.Deferred}
      */
-    get: function(cb) {
-      if (cb) {
-        localstorage.getItem('credentials', cb);
-      } else {
-        var v = localstorage.getItem('credentials');
+    get: function() {
+      var deferred = $.Deferred();
+      localstorage.getItem('credentials', function(v) {
         try {
-          return JSON.parse(v);
+          deferred.resolve(JSON.parse(v));
         } catch(e) {
-          return v;
+          deferred.reject(e);
         }
-      }
+      });
+      return deferred;
     },
     /**
      * Updates stored user credentials and send message 'credentials:updated'.
      * @param credentials {{key: string, secret: string}} user credentials.
-     * @param cb {function} callback function to call after credentials
-     *                      updated.
+     * @returns {$.Deferred}
      */
-    set: function(credentials, cb) {
+    set: function(credentials) {
       var sendMessage = function() {
         if (chrome && chrome.runtime) {
           chrome.runtime.sendMessage(chrome.runtime.id, {
@@ -12770,14 +12752,12 @@ define('utils/credentials',['localstorage'], function(localstorage) {
         }
       };
       credentials = JSON.stringify(credentials);
-      if (cb) {
-        localstorage.setItem('credentials', credentials, function() {
-          cb();
-          sendMessage();
-        });
-      } else {
-        localstorage.setItem('credentials', credentials, sendMessage);
-      }
+      var deferred = $.Deferred();
+      localstorage.setItem('credentials', credentials, function() {
+        deferred.resolve();
+        sendMessage();
+      });
+      return deferred;
     }
   };
 });
@@ -12788,9 +12768,10 @@ define('utils/credentials',['localstorage'], function(localstorage) {
 define('utils',[
   'underscore',
   'jquery',
+  'Backbone',
   'exports',
   'utils/credentials'
-], function(_, $, exports, credentials) {
+], function(_, $, Backbone, exports, credentials) {
   'use strict';
 
   exports.credentials = credentials;
@@ -12927,9 +12908,42 @@ define('utils',[
   var VARIABLE_REGEX = /^{{\s*(\S*)\s*}}$/;
 
   /**
+   * Recursively sets property value.
+   * @param obj {Backbone.Model|{}} object to set property.
+   * @param property {string} property name.
+   * @param value {*} property value.
+   */
+  exports.setProperty = function(obj, property, value) {
+    var parts = property.split('.');
+    _.each(parts.slice(0, parts.length - 1), function(part) {
+      if (obj instanceof Backbone.Model) {
+        if (!_.isUndefined(obj[part])) {
+          obj = obj[part];
+        } else {
+          if (_.isUndefined(obj.get(part))) {
+            obj.set(part, {});
+          }
+          obj = obj.get(part);
+        }
+      } else {
+        if (_.isUndefined(obj[part])) {
+          obj[part] = {};
+        }
+        obj = obj[part];
+      }
+    });
+    if (obj instanceof Backbone.Model) {
+      obj.set(_.last(parts), value);
+    } else {
+      obj[_.last(parts)] = value;
+    }
+  };
+
+  /**
    * Recursively gets property of a given object.
    * @param obj {Backbone.Model|{}} object to get property.
    * @param property {string} property name.
+   * @returns {*} property value.
    */
   exports.getProperty = function(obj, property) {
     if (_.isUndefined(property)) {
@@ -12938,13 +12952,12 @@ define('utils',[
     var parts = property.split('.');
     var value = obj;
     var part;
+    var index;
     for (var i = 0;
          i < parts.length && !_.isUndefined(value) && !_.isNull(value);
          ++i) {
       part = parts[i];
-      if (_.functions(value).indexOf('get') < 0) {
-        value = value[part];
-      } else {
+      if (value instanceof Backbone.Model) {
         // If object has a get method then we should try to use it first to
         // get property value.
         if (_.isUndefined(value.get(part)) && part in value) {
@@ -12952,6 +12965,21 @@ define('utils',[
         } else {
           value = value.get(part);
         }
+      } else if (value instanceof Backbone.Collection) {
+        // It seems that value is a Backbone.Collection we should use at to
+        // get item by index.
+        index = parseInt(part);
+        if (!_.isNaN(index)) {
+          value = value.at(index);
+        } else {
+          if (_.isUndefined(value.get(part)) && part in value) {
+            value = value[part];
+          } else {
+            value = value.get(part);
+          }
+        }
+      } else {
+        value = value[part];
       }
     }
     return value;
@@ -12977,9 +13005,9 @@ define('utils',[
 
   /**
    * Interpolate variables in string using given context.
-   * @param context {Backbone.Model} model object
-   * @param value {string} string with variables to interpolate
-   * @returns {string} string with interpolated variables
+   * @param context {Backbone.Model} model object.
+   * @param value {string} string with variables to interpolate.
+   * @returns {string} string with interpolated variables.
    */
   exports.interpolateValueString = function(context, value) {
     if (_.isString(value)) {
@@ -13037,6 +13065,18 @@ define('utils',[
   };
 });
 
+
+/* jshint strict: true, browser: true */
+/* globals define */
+
+define('models/call',['Backbone'], function(Backbone) {
+  'use strict';
+
+  return Backbone.Model.extend({
+    idAttribute: 'id',
+    urlRoot: 'call/'
+  });
+});
 
 /* jshint strict: true */
 /* globals define */
@@ -13331,6 +13371,7 @@ define('models/vehicles',['Backbone', './vehicle'], function(Backbone, Vehicle) 
 /* globals define */
 
 define('models',[
+  'utils',
   'models/call',
   'models/customer',
   'models/customers',
@@ -13339,9 +13380,21 @@ define('models',[
   'models/user',
   'models/vehicle',
   'models/vehicles'
-], function(call, customer, customers, interaction, script, user, vehicle,
-            vehicles) {
+], function(utils, call, customer, customers, interaction, script, user,
+            vehicle, vehicles) {
   'use strict';
+
+  var originalSync = Backbone.sync;
+
+  Backbone.sync = function(method, model, options) {
+    return utils.credentials.get()
+      .then(function(credentials) {
+        options.headers = options.headers || {};
+        options.headers.Authorization =
+          'user ' + window.btoa(credentials.key + ':' + credentials.secret);
+        return originalSync(method, model, options);
+      });
+  };
 
   return {
     Call: call,
