@@ -304,6 +304,7 @@ define('models/vehicles',['Backbone', './vehicle'], function(Backbone, Vehicle) 
 
 define('models',[
   'underscore',
+  'config',
   'utils',
   'models/call',
   'models/customer',
@@ -313,8 +314,8 @@ define('models',[
   'models/user',
   'models/vehicle',
   'models/vehicles'
-], function(_, utils, call, customer, customers, interaction, script, user,
-            vehicle, vehicles) {
+], function(_, config, utils, call, customer, customers, interaction, script,
+            user, vehicle, vehicles) {
   'use strict';
 
   var originalSync = Backbone.sync;
