@@ -242,6 +242,18 @@ define('models/interaction',[
   });
 });
 
+/* jshint strict: true, browser: true */
+/* globals define */
+
+define('models/phone_number',['Backbone'], function(Backbone) {
+  'use strict';
+
+  return Backbone.Model.extend({
+    idAttribute: 'id',
+    urlRoot: 'phone_number/'
+  });
+});
+
 /* jshint strict: true */
 /* globals define */
 
@@ -331,12 +343,13 @@ define('models',[
   'models/customer',
   'models/customers',
   'models/interaction',
+  'models/phone_number',
   'models/script',
   'models/user',
   'models/vehicle',
   'models/vehicles'
-], function(_, config, utils, call, customer, customers, interaction, script,
-            user, vehicle, vehicles) {
+], function(_, config, utils, call, customer, customers, interaction,
+            phoneNumber, script, user, vehicle, vehicles) {
   'use strict';
 
   var originalSync = Backbone.sync;
@@ -368,6 +381,7 @@ define('models',[
     Customer: customer,
     Customers: customers,
     Interaction: interaction,
+    PhoneNumber: phoneNumber,
     Script: script,
     User: user,
     Vehicle: vehicle,

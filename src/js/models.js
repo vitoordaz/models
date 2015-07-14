@@ -9,12 +9,13 @@ define([
   'models/customer',
   'models/customers',
   'models/interaction',
+  'models/phone_number',
   'models/script',
   'models/user',
   'models/vehicle',
   'models/vehicles'
-], function(_, config, utils, call, customer, customers, interaction, script,
-            user, vehicle, vehicles) {
+], function(_, config, utils, call, customer, customers, interaction,
+            phoneNumber, script, user, vehicle, vehicles) {
   'use strict';
 
   var originalSync = Backbone.sync;
@@ -46,6 +47,7 @@ define([
     Customer: customer,
     Customers: customers,
     Interaction: interaction,
+    PhoneNumber: phoneNumber,
     Script: script,
     User: user,
     Vehicle: vehicle,
