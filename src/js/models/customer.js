@@ -13,6 +13,18 @@ define(['Backbone', 'utils'], function(Backbone, utils) {
         this.get('last_name'),
         this.get('middle_name')
       );
+    },
+    getShortName: function() {
+      var firstName = this.get('first_name');
+      var lastName = this.get('last_name');
+      var parts = [];
+      if (firstName) {
+        parts.push(firstName);
+      }
+      if (lastName) {
+        parts.push(lastName);
+      }
+      return parts.join(' ');
     }
   });
 });

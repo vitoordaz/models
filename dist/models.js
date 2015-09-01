@@ -15,6 +15,13 @@ define('models/call',['Backbone'], function(Backbone) {
       return this.get('status') === 'call';
     },
     /**
+     * Returns true if call status is hangup.
+     * @returns {boolean}
+     */
+    isHangup: function() {
+      return this.get('status') === 'hangup';
+    },
+    /**
      * Returns true if call status is up.
      * @returns {boolean}
      */
@@ -46,6 +53,18 @@ define('models/customer',['Backbone', 'utils'], function(Backbone, utils) {
         this.get('last_name'),
         this.get('middle_name')
       );
+    },
+    getShortName: function() {
+      var firstName = this.get('first_name');
+      var lastName = this.get('last_name');
+      var parts = [];
+      if (firstName) {
+        parts.push(firstName);
+      }
+      if (lastName) {
+        parts.push(lastName);
+      }
+      return parts.join(' ');
     }
   });
 });
