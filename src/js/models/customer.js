@@ -1,13 +1,14 @@
 /* jshint strict: true */
 /* globals define */
 
-define(['Backbone', 'utils'], function(Backbone, utils) {
+define(['Backbone', 'Vehicles', 'utils'], function(Backbone, Vehicles, utils) {
   'use strict';
 
   return Backbone.Model.extend({
     idAttribute: 'id',
     urlRoot: 'customer/',
     initialize: function() {
+      this.vehicles = new Vehicles();
       this.name = utils.getFullName(
         this.get('first_name'),
         this.get('last_name'),
