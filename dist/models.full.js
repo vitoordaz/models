@@ -13144,8 +13144,8 @@ define('models/vehicles',['Backbone', './vehicle'], function(Backbone, Vehicle) 
 /* jshint strict: true */
 /* globals define */
 
-define('models/customer',['Backbone', 'utils', './vehicles'], function(Backbone, Vehicles,
-                                                     utils) {
+define('models/customer',['Backbone', 'utils', './vehicles'], function(Backbone, utils,
+                                                     Vehicles) {
   'use strict';
 
   return Backbone.Model.extend({
