@@ -13121,7 +13121,17 @@ define('models/vehicle',['Backbone'], function(Backbone) {
 
   return Backbone.Model.extend({
     idAttribute: 'id',
-    urlRoot: 'vehicle/'
+    urlRoot: 'vehicle/',
+    /**
+     * Returns vehicle short name.
+     */
+    getShortName: function() {
+      return [
+        this.get('brand'),
+        this.get('model'),
+        this.get('registration_number')
+      ].join(' ') || '&nbsp;';
+    }
   });
 });
 
