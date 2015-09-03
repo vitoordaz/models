@@ -41,13 +41,43 @@ define('models/call',['Backbone'], function(Backbone) {
 /* jshint strict: true */
 /* globals define */
 
-define('models/customer',['Backbone', 'utils'], function(Backbone, utils) {
+define('models/vehicle',['Backbone'], function(Backbone) {
+  'use strict';
+
+  return Backbone.Model.extend({
+    idAttribute: 'id',
+    urlRoot: 'vehicle/'
+  });
+});
+
+/* jshint strict: true */
+/* globals define */
+
+define('models/vehicles',['Backbone', './vehicle'], function(Backbone, Vehicle) {
+  'use strict';
+
+  return Backbone.Collection.extend({
+    model: Vehicle,
+    url: 'vehicle/',
+    parse: function(response) {
+      this.total = response.meta.total;
+      return response.data;
+    }
+  });
+});
+
+/* jshint strict: true */
+/* globals define */
+
+define('models/customer',['Backbone', 'utils', './vehicles'], function(Backbone, Vehicles,
+                                                     utils) {
   'use strict';
 
   return Backbone.Model.extend({
     idAttribute: 'id',
     urlRoot: 'customer/',
     initialize: function() {
+      this.vehicles = new Vehicles();
       this.name = utils.getFullName(
         this.get('first_name'),
         this.get('last_name'),
@@ -320,34 +350,6 @@ define('models/user',['Backbone'], function(Backbone) {
   return Backbone.Model.extend({
     idAttribute: 'id',
     urlRoot: 'user/'
-  });
-});
-
-/* jshint strict: true */
-/* globals define */
-
-define('models/vehicle',['Backbone'], function(Backbone) {
-  'use strict';
-
-  return Backbone.Model.extend({
-    idAttribute: 'id',
-    urlRoot: 'vehicle/'
-  });
-});
-
-/* jshint strict: true */
-/* globals define */
-
-define('models/vehicles',['Backbone', './vehicle'], function(Backbone, Vehicle) {
-  'use strict';
-
-  return Backbone.Collection.extend({
-    model: Vehicle,
-    url: 'vehicle/',
-    parse: function(response) {
-      this.total = response.meta.total;
-      return response.data;
-    }
   });
 });
 

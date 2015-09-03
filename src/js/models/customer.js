@@ -1,7 +1,8 @@
 /* jshint strict: true */
 /* globals define */
 
-define(['Backbone', 'Vehicles', 'utils'], function(Backbone, Vehicles, utils) {
+define(['Backbone', 'utils', './vehicles'], function(Backbone, Vehicles,
+                                                     utils) {
   'use strict';
 
   return Backbone.Model.extend({
