@@ -2,5 +2,5 @@
 /* globals define */
 
 define({
-  apiServer: 'https://api2.absdata.ru:443'
+  apiServer: 'https://v2.api.absdata.ru:443'
 });
